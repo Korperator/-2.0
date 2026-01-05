@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK (from ZIP)
 
 on:
   workflow_dispatch:
@@ -18,6 +18,13 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
+      - name: Unzip Flutter project
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip
+          unzip -o change_helper.zip -d project
+          ls -la project
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -25,17 +32,15 @@ jobs:
           cache: true
 
       - name: Flutter pub get
+        working-directory: project/change_helper
         run: flutter pub get
 
-      # (по избор) бърз lint/проверка - можеш да го махнеш
-      - name: Flutter analyze
-        run: flutter analyze
-
       - name: Build APK (release)
+        working-directory: project/change_helper
         run: flutter build apk --release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: project/change_helper/build/app/outputs/flutter-apk/app-release.apk
